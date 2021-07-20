@@ -33,6 +33,10 @@ io.on("connection", (socket) => {
     io.emit("chat message", msg);
   });
 
+  /*
+    Need to fix this one here: the socket that emits this event 
+    should not be able to see the data itself.
+  */
   socket.on("someevent", (data) => {
     console.log(data);
     io.emit("someevent", data);

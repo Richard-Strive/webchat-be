@@ -11,6 +11,7 @@ const http = require("http");
 const serverTest = http.createServer(server);
 
 const socket = require("socket.io");
+const { setTimeout } = require("timers");
 
 server.use(express.json());
 server.use(cors());
@@ -24,16 +25,21 @@ console.log(listEndPoints(server));
 const io = socket(serverTest);
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  io.emit("welcome", { msg: "a user connected to the server" });
 
   // Braodcasting to the rest of the users connected included the sender
-  socket.on("msg", (data) => {
-    console.log("This is the message you'd sent", data);
-    io.emit("msg", data);
+  socket.on("chat message", (msg) => {
+    console.log("This is the message you'd sent", msg);
+    io.emit("chat message", msg);
+  });
+
+  socket.on("someevent", (data) => {
+    console.log(data);
+    io.emit("someevent", data);
   });
 
   socket.on("disconnect", () => {
-    console.log("a user disconnected");
+    socket.emit("a user disconnected");
   });
 });
 

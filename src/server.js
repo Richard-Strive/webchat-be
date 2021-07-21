@@ -10,7 +10,7 @@ const listEndPoints = require("express-list-endpoints");
 const http = require("http");
 const serverTest = http.createServer(server);
 
-const socket = require("socket.io");
+// const socket = require("socket.io");
 const { setTimeout } = require("timers");
 
 server.use(express.json());
@@ -22,11 +22,37 @@ const port = process.env.PORT || 5000;
 
 console.log(listEndPoints(server));
 
-const io = socket(serverTest);
+const io = require("socket.io")(serverTest, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
+
+// io.use((socket, next) => {
+//   const name = socket.handshake;
+//   if (!username) {
+//     return next(new Error("invalid username"));
+//   }
+
+//   console.log(name);
+//   socket.name = name;
+//   next();
+// });
 
 io.on("connection", (socket) => {
-  io.emit("welcome", { msg: "a user connected to the server" });
+  const users = [];
 
+  for (let [id, socket] of io.of("/").sockets) {
+    users.push({
+      userID: id,
+      username: socket.handshake.auth.name,
+    });
+  }
+
+  socket.emit("users", users);
+
+  io.emit("welcome", { msg: "a user connected to the server" });
+  console.log(socket);
   // Braodcasting to the rest of the users connected included the sender
   socket.on("chat message", (msg) => {
     io.emit("chat message", msg);

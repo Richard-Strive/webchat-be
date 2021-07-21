@@ -29,17 +29,11 @@ io.on("connection", (socket) => {
 
   // Braodcasting to the rest of the users connected included the sender
   socket.on("chat message", (msg) => {
-    console.log("This is the message you'd sent", msg);
     io.emit("chat message", msg);
   });
 
-  /*
-    Need to fix this one here: the socket that emits this event 
-    should not be able to see the data itself.
-  */
   socket.on("someevent", (data) => {
-    console.log(data);
-    io.emit("someevent", data);
+    socket.broadcast.emit("someevent", data);
   });
 
   socket.on("disconnect", () => {

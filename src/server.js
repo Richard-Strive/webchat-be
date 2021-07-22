@@ -28,31 +28,30 @@ const io = require("socket.io")(serverTest, {
   },
 });
 
-// io.use((socket, next) => {
-//   const name = socket.handshake;
-//   if (!username) {
-//     return next(new Error("invalid username"));
-//   }
-
-//   console.log(name);
-//   socket.name = name;
-//   next();
-// });
-
 io.on("connection", (socket) => {
   const users = [];
-
   for (let [id, socket] of io.of("/").sockets) {
     users.push({
       userID: id,
       username: socket.handshake.auth.name,
     });
   }
+  console.log("this are the users", users);
 
-  socket.emit("users", users);
+  /*
+  this will send to the user newly connected the previous connected users BUT ONLY THE NEWLY USER WILL HAVE THIS:
+  the previously connected user will not see the new one.
+  */
+  io.emit("users", users);
+
+  // Send to the other users connected the updated list
+  socket.broadcast.emit("user connected", {
+    userID: socket.id,
+    username: socket.handshake.auth.name,
+  });
 
   io.emit("welcome", { msg: "a user connected to the server" });
-  console.log(socket);
+  // console.log(socket);
   // Braodcasting to the rest of the users connected included the sender
   socket.on("chat message", (msg) => {
     io.emit("chat message", msg);

@@ -13,6 +13,9 @@ const serverTest = http.createServer(server);
 // const socket = require("socket.io");
 const { setTimeout } = require("timers");
 
+// SOCKET: sends to himself and the other connected sockets.
+// IO: send to all the connected sockets.
+
 server.use(express.json());
 server.use(cors());
 
@@ -42,7 +45,7 @@ io.on("connection", (socket) => {
   this will send to the user newly connected the previous connected users BUT ONLY THE NEWLY USER WILL HAVE THIS:
   the previously connected user will not see the new one.
   */
-  io.emit("users", users);
+  socket.emit("users", users);
 
   // Send to the other users connected the updated list
   socket.broadcast.emit("user connected", {

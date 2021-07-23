@@ -11,7 +11,6 @@ const http = require("http");
 const serverTest = http.createServer(server);
 
 // const socket = require("socket.io");
-const { setTimeout } = require("timers");
 
 // SOCKET: sends to himself and the other connected sockets.
 // IO: send to all the connected sockets.
@@ -27,31 +26,37 @@ console.log(listEndPoints(server));
 
 const io = require("socket.io")(serverTest, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3000/private",
+      "http://localhost:3000/general",
+    ],
   },
 });
 
 io.on("connection", (socket) => {
   const users = [];
+
   for (let [id, socket] of io.of("/").sockets) {
     users.push({
       userID: id,
       username: socket.handshake.auth.name,
     });
   }
-  console.log("this are the users", users);
 
   /*
-  this will send to the user newly connected the previous connected users BUT ONLY THE NEWLY USER WILL HAVE THIS:
-  the previously connected user will not see the new one.
+   On connection we will send to all client the listed users
   */
-  socket.emit("users", users);
+
+  io.emit("users", users);
 
   // Send to the other users connected the updated list
   socket.broadcast.emit("user connected", {
     userID: socket.id,
     username: socket.handshake.auth.name,
   });
+
+  console.log("this are the users", users);
 
   io.emit("welcome", { msg: "a user connected to the server" });
   // console.log(socket);

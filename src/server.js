@@ -60,6 +60,16 @@ io.on("connection", (socket) => {
 
   io.emit("welcome", { msg: "a user connected to the server" });
   // console.log(socket);
+
+  // PRIVATE CHAT
+  socket.on("pvt", ({ message, to }) => {
+    socket.to(to).emit("pvt", {
+      message,
+      from: socket.id,
+    });
+  });
+
+  // GENERAL CHAT
   // Braodcasting to the rest of the users connected included the sender
   socket.on("chat message", (msg) => {
     io.emit("chat message", msg);
